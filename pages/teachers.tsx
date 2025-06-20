@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import Link from 'next/link'
 
@@ -16,7 +16,8 @@ export default function Teachers() {
 
   useEffect(() => {
     async function fetchTeachers() {
-      const snapshot = await getDocs(collection(db, 'teachers'))
+      const q = query(collection(db, 'teachers'), where('isApproved', '==', true))
+      const snapshot = await getDocs(q)
       const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Teacher[]
       setTeachers(list)
       setLoading(false)
@@ -46,3 +47,4 @@ export default function Teachers() {
     </main>
   )
 }
+
