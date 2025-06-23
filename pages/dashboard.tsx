@@ -124,3 +124,17 @@ export default function Dashboard() {
     </main>
   )
 }
+<button
+  className="bg-blue-600 text-white py-3 px-6 rounded"
+  onClick={async () => {
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: await auth.currentUser?.getIdToken() }),
+    })
+    const data = await res.json()
+    window.location.href = data.url
+  }}
+>
+  Subscribe for $5/month
+</button>
