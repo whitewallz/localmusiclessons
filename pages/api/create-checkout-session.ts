@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mode: 'subscription',
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!, // Your price ID for $5/month subscription
+          price: process.env.STRIPE_PRICE_ID!, // price_1Rcyy5CMvoWU9VWpEl0kiq2y
           quantity: 1,
         },
       ],
