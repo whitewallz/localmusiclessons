@@ -1,3 +1,4 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 
