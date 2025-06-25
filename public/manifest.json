@@ -1,0 +1,16 @@
+{
+  "name": "LocalMusicLessons",
+  "short_name": "LML",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a202c",
+  "theme_color": "#4c51bf",
+  "description": "Find your perfect music teacher or become one!",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+}
