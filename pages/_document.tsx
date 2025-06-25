@@ -7,7 +7,6 @@ export default function Document() {
       <Head>
         {/* Primary Meta Tags */}
         <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Find your perfect music teacher. Browse qualified teachers for every instrument and start your lesson search today." />
         <meta name="author" content="Music Teacher Platform" />
 
