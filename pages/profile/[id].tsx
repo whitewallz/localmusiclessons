@@ -46,8 +46,19 @@ export default function TeacherProfile() {
     }
   }, [id])
 
-  function handleSend() {
-    // You can later replace this with an API call
+  async function handleSend() {
+  if (!id || !teacher) return
+
+  try {
+    await addDoc(collection(db, 'messages'), {
+      teacherId: id,
+      teacherName: teacher.name,
+      studentName,
+      studentEmail,
+      message,
+      createdAt: serverTimestamp(),
+    })
+
     setSent(true)
     setTimeout(() => {
       setShowModal(false)
@@ -56,8 +67,11 @@ export default function TeacherProfile() {
       setStudentEmail('')
       setMessage('')
     }, 2000)
+  } catch (err) {
+    console.error('Error sending message:', err)
+    alert('Failed to send message. Please try again later.')
   }
-
+}
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
