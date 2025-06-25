@@ -1,0 +1,24 @@
+<svg width="420" height="70" viewBox="0 0 420 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="420" height="70" rx="14" fill="#4c51bf" />
+  
+  <!-- Left note stem -->
+  <rect x="40" y="15" width="6" height="38" fill="white" rx="2" />
+  
+  <!-- Left note head -->
+  <ellipse cx="48" cy="55" rx="11" ry="8" fill="white" transform="rotate(-20 48 55)" />
+  
+  <!-- Right note stem -->
+  <rect x="90" y="10" width="6" height="45" fill="white" rx="2" />
+  
+  <!-- Right note head -->
+  <ellipse cx="98" cy="45" rx="11" ry="8" fill="white" transform="rotate(-20 98 45)" />
+  
+  <!-- Connecting beam -->
+  <path d="M46 15 L96 10" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <path d="M46 25 L96 20" stroke="white" stroke-width="6" stroke-linecap="round" />
+  
+  <!-- Text -->
+  <text x="140" y="45" fill="white" font-family="Inter, sans-serif" font-weight="700" font-size="28" letter-spacing="0.02em" style="user-select:none;">
+    LocalMusicLessons
+  </text>
+</svg>
