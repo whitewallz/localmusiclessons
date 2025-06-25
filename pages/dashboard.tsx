@@ -5,9 +5,9 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   serverTimestamp,
 } from 'firebase/firestore'
+import RequireAuth from '../components/RequireAuth'
 
 type TeacherProfile = {
   name: string
@@ -36,7 +36,6 @@ export default function Dashboard() {
         router.push('/login')
       } else {
         setUser(u)
-        // Fetch profile
         const docRef = doc(db, 'teachers', u.uid)
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
@@ -79,62 +78,67 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="max-w-xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6">Teacher Dashboard</h1>
-      <form onSubmit={handleSave} className="flex flex-col gap-4">
-        <label>
-          Name
-          <input
-            type="text"
-            value={profile.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </label>
-        <label>
-          Instrument
-          <input
-            type="text"
-            value={profile.instrument}
-            onChange={(e) => updateField('instrument', e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </label>
-        <label>
-          Bio
-          <textarea
-            value={profile.bio}
-            onChange={(e) => updateField('bio', e.target.value)}
-            required
-            rows={5}
-            className="w-full p-2 border rounded"
-          />
-        </label>
+    <RequireAuth>
+      <main className="max-w-xl mx-auto p-8">
+        <h1 className="text-3xl font-bold mb-6">Teacher Dashboard</h1>
+
+        <form onSubmit={handleSave} className="flex flex-col gap-4">
+          <label>
+            Name
+            <input
+              type="text"
+              value={profile.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              required
+              className="w-full p-2 border rounded"
+            />
+          </label>
+          <label>
+            Instrument
+            <input
+              type="text"
+              value={profile.instrument}
+              onChange={(e) => updateField('instrument', e.target.value)}
+              required
+              className="w-full p-2 border rounded"
+            />
+          </label>
+          <label>
+            Bio
+            <textarea
+              value={profile.bio}
+              onChange={(e) => updateField('bio', e.target.value)}
+              required
+              rows={5}
+              className="w-full p-2 border rounded"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+          >
+            {saving ? 'Saving...' : 'Save Profile'}
+          </button>
+        </form>
+
+        {message && <p className="mt-4">{message}</p>}
+
         <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+          className="mt-6 bg-indigo-600 text-white py-3 px-6 rounded hover:bg-indigo-700"
+          onClick={async () => {
+            const res = await fetch('/api/create-checkout-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: await auth.currentUser?.getIdToken() }),
+            })
+            const data = await res.json()
+            window.location.href = data.url
+          }}
         >
-          {saving ? 'Saving...' : 'Save Profile'}
+          Subscribe for $5/month
         </button>
-      </form>
-      {message && <p className="mt-4">{message}</p>}
-    </main>
+      </main>
+    </RequireAuth>
   )
 }
-<button
-  className="bg-blue-600 text-white py-3 px-6 rounded"
-  onClick={async () => {
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: await auth.currentUser?.getIdToken() }),
-    })
-    const data = await res.json()
-    window.location.href = data.url
-  }}
->
-  Subscribe for $5/month
-</button>
