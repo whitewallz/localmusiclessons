@@ -1,9 +1,14 @@
+import { useState } from 'react'
+
 type AlertProps = {
-  type?: 'info' | 'success' | 'error'
   message: string
+  type?: 'info' | 'success' | 'error'
 }
 
-export default function Alert({ type = 'info', message }: AlertProps) {
+export default function Alert({ message, type = 'info' }: AlertProps) {
+  const [visible, setVisible] = useState(true)
+  if (!visible) return null
+
   const colors = {
     info: 'bg-blue-100 text-blue-800',
     success: 'bg-green-100 text-green-800',
@@ -11,8 +16,15 @@ export default function Alert({ type = 'info', message }: AlertProps) {
   }
 
   return (
-    <div className={`p-4 rounded ${colors[type]} mb-4`}>
-      {message}
+    <div className={`p-4 rounded mb-4 flex justify-between items-center ${colors[type]}`}>
+      <p>{message}</p>
+      <button
+        onClick={() => setVisible(false)}
+        className="font-bold text-xl leading-none"
+        aria-label="Dismiss alert"
+      >
+        &times;
+      </button>
     </div>
   )
 }
