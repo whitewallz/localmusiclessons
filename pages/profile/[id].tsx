@@ -1,4 +1,4 @@
-iimport { useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
