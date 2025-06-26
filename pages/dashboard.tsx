@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react'
-import { auth, db } from '../lib/firebase'
 import { useRouter } from 'next/router'
+import { auth, db } from '../lib/firebase'
 import {
   doc,
   getDoc,
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import RequireAuth from '../components/RequireAuth'
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
+import Alert from '../components/Alert'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 type TeacherProfile = {
   name: string
   instrument: string
   bio: string
   email: string
-  updatedAt?: any
+  photoURL?: string
+  phone?: string
+  pricing?: string
+  lessonType?: 'In-person' | 'Online' | 'Both'
 }
 
 export default function Dashboard() {
@@ -24,10 +29,14 @@ export default function Dashboard() {
     instrument: '',
     bio: '',
     email: '',
+    phone: '',
+    pricing: '',
+    lessonType: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [file, setFile] = useState<File | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -41,7 +50,15 @@ export default function Dashboard() {
         if (docSnap.exists()) {
           setProfile(docSnap.data() as TeacherProfile)
         } else {
-          setProfile({ name: '', instrument: '', bio: '', email: u.email || '' })
+          setProfile({
+            name: '',
+            instrument: '',
+            bio: '',
+            email: u.email || '',
+            phone: '',
+            pricing: '',
+            lessonType: '',
+          })
         }
         setLoading(false)
       }
@@ -49,27 +66,40 @@ export default function Dashboard() {
     return unsubscribe
   }, [router])
 
-  if (loading) return <p className="p-8">Loading...</p>
+  if (loading) return <LoadingSpinner />
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
     setMessage('')
+    let photoURL = profile.photoURL
+
     try {
-      const docRef = doc(db, 'teachers', user!.uid)
+      if (file && user) {
+        const storage = getStorage()
+        const fileRef = ref(storage, `teachers/${user.uid}/profile.jpg`)
+        await uploadBytes(fileRef, file)
+        photoURL = await getDownloadURL(fileRef)
+      }
+
       await setDoc(
-        docRef,
+        doc(db, 'teachers', user!.uid),
         {
           ...profile,
+          photoURL,
           email: user!.email,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       )
+
+      setProfile((prev) => ({ ...prev, photoURL }))
       setMessage('Profile saved successfully!')
-    } catch {
+    } catch (err) {
       setMessage('Failed to save profile.')
+      console.error(err)
     }
+
     setSaving(false)
   }
 
@@ -78,67 +108,134 @@ export default function Dashboard() {
   }
 
   return (
-    <RequireAuth>
-      <main className="max-w-xl mx-auto p-8">
-        <h1 className="text-3xl font-bold mb-6">Teacher Dashboard</h1>
-
-        <form onSubmit={handleSave} className="flex flex-col gap-4">
-          <label>
-            Name
-            <input
-              type="text"
-              value={profile.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </label>
-          <label>
-            Instrument
-            <input
-              type="text"
-              value={profile.instrument}
-              onChange={(e) => updateField('instrument', e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </label>
-          <label>
-            Bio
-            <textarea
-              value={profile.bio}
-              onChange={(e) => updateField('bio', e.target.value)}
-              required
-              rows={5}
-              className="w-full p-2 border rounded"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
+    <main className="max-w-2xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Your Teacher Dashboard</h1>
+        {user && (
+          <a
+            href={`/profile/${user.uid}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 hover:underline"
           >
-            {saving ? 'Saving...' : 'Save Profile'}
-          </button>
-        </form>
+            Preview Public Profile →
+          </a>
+        )}
+      </div>
 
-        {message && <p className="mt-4">{message}</p>}
+      <form onSubmit={handleSave} className="space-y-6">
+        {/* Profile Picture Upload */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {profile.photoURL && (
+            <img
+              src={profile.photoURL}
+              alt="Profile"
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <label className="block font-semibold mb-1">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+          </div>
+        </div>
 
+        {/* Name */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Name</label>
+          <input
+            type="text"
+            value={profile.name}
+            onChange={(e) => updateField('name', e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        {/* Instrument */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Instrument</label>
+          <input
+            type="text"
+            value={profile.instrument}
+            onChange={(e) => updateField('instrument', e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        {/* Bio */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Bio</label>
+          <textarea
+            value={profile.bio}
+            onChange={(e) => updateField('bio', e.target.value)}
+            rows={4}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        {/* Phone */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Phone Number</label>
+          <input
+            type="tel"
+            value={profile.phone || ''}
+            onChange={(e) => updateField('phone', e.target.value)}
+            className="w-full p-2 border rounded"
+            placeholder="(123) 456-7890"
+          />
+        </div>
+
+        {/* Pricing */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Lesson Price ($/hour)</label>
+          <input
+            type="text"
+            value={profile.pricing || ''}
+            onChange={(e) => updateField('pricing', e.target.value)}
+            className="w-full p-2 border rounded"
+            placeholder="e.g. 40"
+          />
+        </div>
+
+        {/* Lesson Type */}
+        <div className="space-y-1">
+          <label className="block font-semibold">Lesson Type</label>
+          <select
+            value={profile.lessonType || ''}
+            onChange={(e) =>
+              updateField('lessonType', e.target.value as 'In-person' | 'Online' | 'Both')
+            }
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Select type</option>
+            <option value="In-person">In-person</option>
+            <option value="Online">Online</option>
+            <option value="Both">Both</option>
+          </select>
+        </div>
+
+        {/* Save Button */}
         <button
-          className="mt-6 bg-indigo-600 text-white py-3 px-6 rounded hover:bg-indigo-700"
-          onClick={async () => {
-            const res = await fetch('/api/create-checkout-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: await auth.currentUser?.getIdToken() }),
-            })
-            const data = await res.json()
-            window.location.href = data.url
-          }}
+          type="submit"
+          disabled={saving}
+          className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
         >
-          Subscribe for $5/month
+          {saving ? 'Saving...' : 'Save Profile'}
         </button>
-      </main>
-    </RequireAuth>
+      </form>
+
+      {message && (
+        <div className="mt-4">
+          <Alert type="info" message={message} />
+        </div>
+      )}
+    </main>
   )
 }
+
