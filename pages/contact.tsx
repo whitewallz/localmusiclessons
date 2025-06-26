@@ -46,6 +46,7 @@ export default function Contact() {
         name: form.name,
         email: form.email,
         message: form.message,
+        read: false,
         createdAt: serverTimestamp(),
       })
       setAlert({ type: 'success', message: 'Message sent successfully!' })
