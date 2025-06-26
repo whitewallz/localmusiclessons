@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { auth, db } from '../lib/firebase'
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  updateDoc,
+  doc,
+} from 'firebase/firestore'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Alert from '../components/Alert'
 
@@ -10,6 +18,7 @@ type Message = {
   email: string
   message: string
   createdAt: any
+  read?: boolean
 }
 
 export default function Inbox() {
@@ -63,6 +72,18 @@ export default function Inbox() {
       </main>
     )
 
+  async function toggleRead(id: string, currentRead: boolean | undefined) {
+    if (!userId) return
+    try {
+      const messageRef = doc(db, 'messages', id)
+      await updateDoc(messageRef, {
+        read: !currentRead,
+      })
+    } catch {
+      setError('Failed to update message status.')
+    }
+  }
+
   return (
     <main className="max-w-xl mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6">Inbox</h1>
@@ -70,8 +91,13 @@ export default function Inbox() {
         <p>No messages yet.</p>
       ) : (
         <ul className="space-y-4">
-          {messages.map(({ id, name, email, message, createdAt }) => (
-            <li key={id} className="border p-4 rounded shadow-sm">
+          {messages.map(({ id, name, email, message, createdAt, read }) => (
+            <li
+              key={id}
+              className={`border p-4 rounded shadow-sm transition ${
+                read ? 'bg-gray-100' : 'bg-white'
+              }`}
+            >
               <div className="flex justify-between items-center mb-2">
                 <p className="font-semibold">{name}</p>
                 <time className="text-sm text-gray-500">
@@ -80,13 +106,25 @@ export default function Inbox() {
                     : 'Just now'}
                 </time>
               </div>
-              <p className="mb-2">{message}</p>
-              <a
-                href={`mailto:${email}`}
-                className="text-indigo-600 hover:underline text-sm"
-              >
-                Reply to {email}
-              </a>
+              <p className="mb-2 whitespace-pre-wrap">{message}</p>
+              <div className="flex justify-between items-center">
+                <a
+                  href={`mailto:${email}`}
+                  className="text-indigo-600 hover:underline text-sm"
+                >
+                  Reply to {email}
+                </a>
+                <button
+                  onClick={() => toggleRead(id, read)}
+                  className={`text-sm px-3 py-1 rounded border ${
+                    read
+                      ? 'border-gray-400 text-gray-600 hover:bg-gray-200'
+                      : 'border-indigo-600 text-indigo-600 hover:bg-indigo-100'
+                  } transition`}
+                >
+                  {read ? 'Mark Unread' : 'Mark Read'}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -94,4 +132,3 @@ export default function Inbox() {
     </main>
   )
 }
-
