@@ -10,6 +10,7 @@ import {
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 import Alert from '../components/Alert'
 import LoadingSpinner from '../components/LoadingSpinner'
+import NavigationLinks from '../components/NavigationLinks'
 
 type TeacherProfile = {
   name: string
@@ -108,134 +109,134 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">Your Teacher Dashboard</h1>
-        {user && (
-          <a
-            href={`/profile/${user.uid}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:underline"
-          >
-            Preview Public Profile →
-          </a>
-        )}
-      </div>
+    <div className="flex flex-col lg:flex-row max-w-7xl mx-auto p-4 sm:p-8 gap-8">
+      {/* Sidebar */}
+      <aside className="w-full lg:w-64 border-r">
+        <NavigationLinks />
+      </aside>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* Profile Picture Upload */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          {profile.photoURL && (
-            <img
-              src={profile.photoURL}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover"
-            />
+      {/* Main Content */}
+      <main className="flex-1">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Your Teacher Dashboard</h1>
+          {user && (
+            <a
+              href={`/profile/${user.uid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Preview Public Profile →
+            </a>
           )}
-          <div>
-            <label className="block font-semibold mb-1">Profile Picture</label>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-6">
+          {/* Profile Picture Upload */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {profile.photoURL && (
+              <img
+                src={profile.photoURL}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover"
+              />
+            )}
+            <div>
+              <label className="block font-semibold mb-1">Profile Picture</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block font-semibold">Name</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              type="text"
+              value={profile.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              className="w-full p-2 border rounded"
+              required
             />
           </div>
-        </div>
 
-        {/* Name */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Name</label>
-          <input
-            type="text"
-            value={profile.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
+          <div className="space-y-1">
+            <label className="block font-semibold">Instrument</label>
+            <input
+              type="text"
+              value={profile.instrument}
+              onChange={(e) => updateField('instrument', e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
 
-        {/* Instrument */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Instrument</label>
-          <input
-            type="text"
-            value={profile.instrument}
-            onChange={(e) => updateField('instrument', e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
+          <div className="space-y-1">
+            <label className="block font-semibold">Bio</label>
+            <textarea
+              value={profile.bio}
+              onChange={(e) => updateField('bio', e.target.value)}
+              rows={4}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
 
-        {/* Bio */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Bio</label>
-          <textarea
-            value={profile.bio}
-            onChange={(e) => updateField('bio', e.target.value)}
-            rows={4}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
+          <div className="space-y-1">
+            <label className="block font-semibold">Phone Number</label>
+            <input
+              type="tel"
+              value={profile.phone || ''}
+              onChange={(e) => updateField('phone', e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="(123) 456-7890"
+            />
+          </div>
 
-        {/* Phone */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Phone Number</label>
-          <input
-            type="tel"
-            value={profile.phone || ''}
-            onChange={(e) => updateField('phone', e.target.value)}
-            className="w-full p-2 border rounded"
-            placeholder="(123) 456-7890"
-          />
-        </div>
+          <div className="space-y-1">
+            <label className="block font-semibold">Lesson Price ($/hour)</label>
+            <input
+              type="text"
+              value={profile.pricing || ''}
+              onChange={(e) => updateField('pricing', e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="e.g. 40"
+            />
+          </div>
 
-        {/* Pricing */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Lesson Price ($/hour)</label>
-          <input
-            type="text"
-            value={profile.pricing || ''}
-            onChange={(e) => updateField('pricing', e.target.value)}
-            className="w-full p-2 border rounded"
-            placeholder="e.g. 40"
-          />
-        </div>
+          <div className="space-y-1">
+            <label className="block font-semibold">Lesson Type</label>
+            <select
+              value={profile.lessonType || ''}
+              onChange={(e) =>
+                updateField('lessonType', e.target.value as 'In-person' | 'Online' | 'Both')
+              }
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select type</option>
+              <option value="In-person">In-person</option>
+              <option value="Online">Online</option>
+              <option value="Both">Both</option>
+            </select>
+          </div>
 
-        {/* Lesson Type */}
-        <div className="space-y-1">
-          <label className="block font-semibold">Lesson Type</label>
-          <select
-            value={profile.lessonType || ''}
-            onChange={(e) =>
-              updateField('lessonType', e.target.value as 'In-person' | 'Online' | 'Both')
-            }
-            className="w-full p-2 border rounded"
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
           >
-            <option value="">Select type</option>
-            <option value="In-person">In-person</option>
-            <option value="Online">Online</option>
-            <option value="Both">Both</option>
-          </select>
-        </div>
+            {saving ? 'Saving...' : 'Save Profile'}
+          </button>
+        </form>
 
-        {/* Save Button */}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
-        >
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
-      </form>
-
-      {message && (
-        <div className="mt-4">
-          <Alert type="info" message={message} />
-        </div>
-      )}
-    </main>
+        {message && (
+          <div className="mt-4">
+            <Alert type="info" message={message} />
+          </div>
+        )}
+      </main>
+    </div>
   )
 }
-
