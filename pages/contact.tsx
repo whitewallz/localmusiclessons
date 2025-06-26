@@ -1,110 +1,118 @@
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
 import { db } from '../lib/firebase'
+import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import Alert from '../components/Alert'
+import LoadingSpinner from '../components/LoadingSpinner'
 
-export default function Contact() {
+type Teacher = {
+  name: string
+  instrument: string
+  email: string
+}
+
+export default function ContactPage() {
   const router = useRouter()
-  const { to } = router.query
+  const { teacher: teacherId } = router.query
+  const [teacher, setTeacher] = useState<Teacher | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [form, setForm] = useState({ name: '', email: '', message: '' })
+  const [status, setStatus] = useState<'success' | 'error' | ''>('')
 
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    message: '',
-    toTeacherId: typeof to === 'string' ? to : '',
-  })
-  const [loading, setLoading] = useState(false)
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-
-  // Update toTeacherId if query param changes
   useEffect(() => {
-    if (typeof to === 'string') {
-      setForm((f) => ({ ...f, toTeacherId: to }))
+    if (teacherId) {
+      const fetchTeacher = async () => {
+        const docRef = doc(db, 'teachers', teacherId as string)
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          const data = docSnap.data() as Teacher
+          setTeacher({ name: data.name, instrument: data.instrument, email: data.email })
+        }
+        setLoading(false)
+      }
+      fetchTeacher()
     }
-  }, [to])
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value } = e.target
-    setForm((f) => ({ ...f, [name]: value }))
-  }
+  }, [teacherId])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
-    setAlert(null)
-
-    if (!form.name || !form.email || !form.message || !form.toTeacherId) {
-      setAlert({ type: 'error', message: 'Please fill out all fields.' })
-      setLoading(false)
-      return
-    }
-
+    setStatus('')
     try {
       await addDoc(collection(db, 'messages'), {
-        toTeacherId: form.toTeacherId,
-        name: form.name,
-        email: form.email,
+        teacherId,
+        teacherEmail: teacher?.email || '',
+        studentName: form.name,
+        studentEmail: form.email,
         message: form.message,
-        read: false,
         createdAt: serverTimestamp(),
+        read: false,
       })
-      setAlert({ type: 'success', message: 'Message sent successfully!' })
-      setForm((f) => ({ ...f, message: '' }))
-    } catch (error) {
-      setAlert({ type: 'error', message: 'Failed to send message. Please try again.' })
-    } finally {
-      setLoading(false)
+      setForm({ name: '', email: '', message: '' })
+      setStatus('success')
+    } catch (err) {
+      console.error(err)
+      setStatus('error')
     }
   }
 
+  if (loading) return <LoadingSpinner />
+  if (!teacher) return <Alert type="error" message="Teacher not found." />
+
   return (
-    <main className="max-w-xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6">Contact Teacher</h1>
+    <main className="max-w-2xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-2">Contact {teacher.name}</h1>
+      <p className="text-gray-600 mb-6">Instrument: {teacher.instrument}</p>
 
-      {alert && (
-        <Alert type={alert.type} className="mb-6">
-          {alert.message}
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          name="name"
-          placeholder="Your name"
-          value={form.name}
-          onChange={handleChange}
-          required
-          className="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Your email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
-        />
-        <textarea
-          name="message"
-          placeholder="Your message"
-          value={form.message}
-          onChange={handleChange}
-          required
-          rows={5}
-          className="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-indigo-600"
-        />
-
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block font-semibold">Your Name</label>
+          <input
+            type="text"
+            className="w-full border rounded p-2"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Your Email</label>
+          <input
+            type="email"
+            className="w-full border rounded p-2"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-semibold">Message</label>
+          <textarea
+            rows={5}
+            className="w-full border rounded p-2"
+            value={form.message}
+            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            required
+          />
+        </div>
         <button
           type="submit"
-          disabled={loading}
-          className="bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition disabled:opacity-50"
+          className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
         >
-          {loading ? 'Sending...' : 'Send Message'}
+          Send Message
         </button>
       </form>
+
+      {status === 'success' && (
+        <div className="mt-4">
+          <Alert type="success" message="Message sent successfully!" />
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="mt-4">
+          <Alert type="error" message="Something went wrong. Please try again." />
+        </div>
+      )}
     </main>
   )
 }
+
