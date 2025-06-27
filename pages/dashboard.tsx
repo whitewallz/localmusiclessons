@@ -11,6 +11,8 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 import Alert from '../components/Alert'
 import LoadingSpinner from '../components/LoadingSpinner'
 import NavigationLinks from '../components/NavigationLinks'
+import { storage } from '../lib/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 type TeacherProfile = {
   name: string
