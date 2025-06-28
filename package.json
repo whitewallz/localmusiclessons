@@ -10,8 +10,8 @@
     "test": "echo \"No test specified\""
   },
   "dependencies": {
-    "firebase": "^10.4.0",
-    "next": "13.4.12",
+    "firebase": "^11.9.1",
+    "next": "15.3.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "stripe": "^12.18.0"
