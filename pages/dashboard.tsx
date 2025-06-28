@@ -30,6 +30,7 @@ type TeacherProfile = {
    }
 }
 
+
 export default function Dashboard() {
   const [user, setUser] = useState(auth.currentUser)
   const [profile, setProfile] = useState<TeacherProfile>({
@@ -123,8 +124,7 @@ export default function Dashboard() {
 
   function updateField(field: keyof TeacherProfile, value: string) {
     setProfile({ ...profile, [field]: value })
-  }
-}
+  
 
   return (
     <div className="flex flex-col sm:flex-row min-h-screen">
