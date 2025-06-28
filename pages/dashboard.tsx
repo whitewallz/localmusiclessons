@@ -21,6 +21,7 @@ type TeacherProfile = {
   phone?: string
   pricing?: string
   lessonType?: 'In-person' | 'Online' | 'Both' | ''
+  location?: string
 }
 
 export default function Dashboard() {
@@ -226,6 +227,18 @@ export default function Dashboard() {
               value={profile.lessonType || ''}
               onChange={(e) =>
                 updateField('lessonType', e.target.value as 'In-person' | 'Online' | 'Both' | '')
+                {/* Location */}
+<div className="space-y-1">
+  <label className="block font-semibold">Location</label>
+  <input
+    type="text"
+    value={profile.location || ''}
+    onChange={(e) => updateField('location', e.target.value)}
+    className="w-full p-2 border rounded"
+    placeholder="e.g. Seattle, WA"
+  />
+</div>
+
               }
               className="w-full p-2 border rounded"
             >
