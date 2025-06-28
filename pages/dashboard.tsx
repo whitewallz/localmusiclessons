@@ -21,7 +21,13 @@ type TeacherProfile = {
   phone?: string
   pricing?: string
   lessonType?: 'In-person' | 'Online' | 'Both' | ''
-  location?: string
+   location?: {
+    city: string
+    state: string
+    country: string
+    lat: number
+    lng: number
+   }
 }
 
 export default function Dashboard() {
