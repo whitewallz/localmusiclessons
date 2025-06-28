@@ -247,24 +247,25 @@ export default function Dashboard() {
           </div>
             
          {/* Location */}
-            <div className="space-y-1">
-              <label className="block font-semibold">Location</label>
-              <input
-                type="text"
-                value={profile.location || ''}
-                onChange={(e) => updateField('location', e.target.value)}
-                updateField('location', {
-                  city: e.target.value.split(',')[0]?.trim() || '',
-                  state: e.target.value.split(',')[1]?.trim() || '',
-                 country: 'USA',
-                 lat: 0,
-                 lng: 0,
-                })
-              }
-            className="w-full p-2 border rounded"
-            placeholder="e.g. Seattle, WA"
-              />
-          </div>
+<div className="space-y-1">
+  <label className="block font-semibold">Location</label>
+  <input
+    type="text"
+    value={profile.location ? `${profile.location.city}, ${profile.location.state}` : ''}
+    onChange={(e) => {
+      const [city = '', state = ''] = e.target.value.split(',').map((part) => part.trim())
+      updateField('location', {
+        city,
+        state,
+        country: 'USA',
+        lat: 0,
+        lng: 0,
+      })
+    }}
+    className="w-full p-2 border rounded"
+    placeholder="e.g. Seattle, WA"
+  />
+</div>
 
           {/* Save Button */}
           <button
