@@ -85,42 +85,49 @@ export default function Dashboard() {
   if (loading) return <LoadingSpinner />
 
   async function handleSave(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setMessage(null)
-    let photoURL = profile.photoURL
+  e.preventDefault()
+  setSaving(true)
+  setMessage(null)
 
-    try {
-      if (file && user) {
-        console.log('Uploading file:', file.name, file.size, file.type)
-        const storage = getStorage()
-        const fileRef = ref(storage, `teachers/${user.uid}/profile.jpg`)
-        await uploadBytes(fileRef, file)
-        photoURL = await getDownloadURL(fileRef)
-        console.log('Upload successful, photoURL:', photoURL)
-      }
+  let photoURL = profile.photoURL
 
-      console.log('Saving profile data to Firestore...')
-      await setDoc(
-        doc(db, 'teachers', user!.uid),
-        {
-          ...profile,
-          photoURL,
-          email: user!.email,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      )
-      console.log('Profile saved successfully')
-      setProfile((prev) => ({ ...prev, photoURL }))
-      setMessage({ type: 'success', text: 'Profile saved successfully!' })
-    } catch (err) {
-      console.error('Save profile error:', err)
-      setMessage({ type: 'error', text: 'Failed to save profile.' })
+  try {
+    // Upload profile photo if a new file is selected
+    if (file && user) {
+      console.log('Uploading file:', file.name, file.size, file.type)
+      const storage = getStorage()
+      const fileRef = ref(storage, `teachers/${user.uid}/profile.jpg`)
+      await uploadBytes(fileRef, file)
+      photoURL = await getDownloadURL(fileRef)
+      console.log('Upload successful, photoURL:', photoURL)
     }
 
-    setSaving(false)
+    // Build Firestore-safe data object (no undefined values)
+    const data: any = {
+      ...profile,
+      email: user!.email,
+      updatedAt: serverTimestamp(),
+    }
+
+    if (photoURL) {
+      data.photoURL = photoURL
+    }
+
+    console.log('Saving profile data to Firestore...')
+    await setDoc(doc(db, 'teachers', user!.uid), data, { merge: true })
+
+    console.log('Profile saved successfully')
+    setProfile((prev) => ({ ...prev, photoURL }))
+    setMessage({ type: 'success', text: 'Profile saved successfully!' })
+
+  } catch (err) {
+    console.error('Save profile error:', err)
+    setMessage({ type: 'error', text: 'Failed to save profile.' })
   }
+
+  setSaving(false)
+}
+
 
   function updateField(field: keyof TeacherProfile, value: string) {
     setProfile({ ...profile, [field]: value })
