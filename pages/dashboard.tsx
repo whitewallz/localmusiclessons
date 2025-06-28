@@ -62,6 +62,7 @@ export default function Dashboard() {
               phone: '',
               pricing: '',
               lessonType: '',
+              location: '',
             })
           }
         } catch (err) {
