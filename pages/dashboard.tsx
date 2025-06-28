@@ -34,6 +34,7 @@ export default function Dashboard() {
     phone: '',
     pricing: '',
     lessonType: '',
+    location: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
