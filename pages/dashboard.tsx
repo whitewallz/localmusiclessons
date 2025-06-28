@@ -236,6 +236,9 @@ export default function Dashboard() {
               value={profile.lessonType || ''}
               onChange={(e) =>
                 updateField('lessonType', e.target.value as 'In-person' | 'Online' | 'Both' | '')
+                 />
+          </div>
+            
                 {/* Location */}
 <div className="space-y-1">
   <label className="block font-semibold">Location</label>
