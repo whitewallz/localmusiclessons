@@ -40,25 +40,26 @@ export default function Teachers() {
       )}
       <ul className="space-y-6">
         {teachers.map((t) => (
-          <li
-            key={t.id}
-            className="p-6 bg-gray-800 rounded-lg shadow-lg hover:shadow-yellow-glow transition-shadow"
-          >
-            <h2 className="text-3xl font-bold text-white mb-2">{t.name}</h2>
-            <p className="text-yellow-400 italic mb-4">{t.instrument}</p>
-            <p className="text-gray-300 line-clamp-3">{t.bio}</p>
-            <Link
-              href="/contact"
-              className="mt-4 inline-block bg-yellow-500 hover:bg-yellow-600 text-black py-2 px-6 rounded-full font-semibold uppercase tracking-wide transition"
+          <Link key={t.id} href={`/profile/${t.id}`} passHref>
+            <li
+              className="cursor-pointer p-6 bg-gray-800 rounded-lg shadow-lg
+                         hover:shadow-yellow-400 hover:bg-gray-700
+                         transform hover:scale-105 transition duration-300 ease-in-out"
             >
-              Contact
-            </Link>
-          </li>
+              <h2 className="text-3xl font-bold text-white mb-2">{t.name}</h2>
+              <p className="text-yellow-400 italic mb-4">{t.instrument}</p>
+              <p className="text-gray-300 line-clamp-3">{t.bio}</p>
+              <span className="mt-4 inline-block text-yellow-400 font-semibold hover:underline">
+                View Profile →
+              </span>
+            </li>
+          </Link>
         ))}
       </ul>
     </main>
   )
 }
+
 
 
 
