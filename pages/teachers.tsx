@@ -8,6 +8,17 @@ type Teacher = {
   name: string
   instrument: string
   bio: string
+   email: string
+  photoURL?: string
+  phone?: string
+  pricing?: string
+  lessonType?: 'In-person' | 'Online' | 'Both' | ''
+  location?: {
+    city: string
+    state: string
+    country: string
+    lat: number
+    lng: number
 }
 
 export default function Teachers() {
