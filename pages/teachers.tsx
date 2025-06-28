@@ -19,6 +19,7 @@ type Teacher = {
     country: string
     lat: number
     lng: number
+  }
 }
 
 export default function Teachers() {
